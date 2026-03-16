@@ -1,0 +1,17 @@
+<svg width="1280" height="640" viewBox="0 0 1280 640" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1280" height="640" fill="#F4F1EA"/>
+  <rect x="48" y="48" width="1184" height="544" rx="28" fill="#2D3142"/>
+  <rect x="88" y="84" width="230" height="40" rx="20" fill="#EF8354"/>
+  <text x="110" y="110" fill="#2D3142" font-family="Georgia, serif" font-size="24" font-weight="700">OpenClaw Skill</text>
+
+  <text x="88" y="214" fill="#FFFFFF" font-family="Georgia, serif" font-size="76" font-weight="700">Restart</text>
+  <text x="88" y="288" fill="#EF8354" font-family="Georgia, serif" font-size="76" font-weight="700">Continuity</text>
+  <rect x="88" y="332" width="148" height="6" rx="3" fill="#EF8354" fill-opacity="0.95"/>
+  <rect x="248" y="332" width="72" height="6" rx="3" fill="#EF8354" fill-opacity="0.35"/>
+
+  <text x="88" y="356" fill="#EAEAEA" font-family="Arial, sans-serif" font-size="32">Resume active work cleanly after restarts</text>
+  <text x="88" y="398" fill="#BFC0C0" font-family="Arial, sans-serif" font-size="32">instead of making users repeat themselves.</text>
+
+  <text x="88" y="458" fill="#EAEAEA" font-family="Arial, sans-serif" font-size="26">Persist the top task, carry the critical IDs,</text>
+  <text x="88" y="496" fill="#BFC0C0" font-family="Arial, sans-serif" font-size="26">and come back with context intact.</text>
+</svg>

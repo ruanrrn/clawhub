@@ -1,0 +1,16 @@
+{
+  "name": "model-speedtest",
+  "version": "1.0.0",
+  "description": "Test model latency by sending ping and measuring response time",
+  "main": "main.js",
+  "scripts": {
+    "test": "node main.js"
+  },
+  "keywords": [
+    "model",
+    "latency",
+    "speedtest",
+    "benchmark"
+  ],
+  "license": "MIT"
+}

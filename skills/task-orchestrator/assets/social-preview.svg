@@ -1,0 +1,17 @@
+<svg width="1280" height="640" viewBox="0 0 1280 640" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1280" height="640" fill="#F5EFE3"/>
+  <rect x="48" y="48" width="1184" height="544" rx="28" fill="#132A13"/>
+  <rect x="88" y="84" width="230" height="40" rx="20" fill="#DDA15E"/>
+  <text x="110" y="110" fill="#132A13" font-family="Georgia, serif" font-size="24" font-weight="700">OpenClaw Skill</text>
+
+  <text x="88" y="214" fill="#F6F1E8" font-family="Georgia, serif" font-size="76" font-weight="700">Task</text>
+  <text x="88" y="288" fill="#F6F1E8" font-family="Georgia, serif" font-size="76" font-weight="700">Orchestrator</text>
+  <rect x="88" y="332" width="148" height="6" rx="3" fill="#DDA15E" fill-opacity="0.95"/>
+  <rect x="248" y="332" width="72" height="6" rx="3" fill="#DDA15E" fill-opacity="0.35"/>
+
+  <text x="88" y="366" fill="#E9EDC9" font-family="Arial, sans-serif" font-size="30">Smart scheduling, prioritization,</text>
+  <text x="88" y="408" fill="#E9EDC9" font-family="Arial, sans-serif" font-size="30">and staged progress for multi-request work.</text>
+
+  <text x="88" y="468" fill="#B7C89A" font-family="Arial, sans-serif" font-size="26">When chat turns into an operating queue,</text>
+  <text x="88" y="506" fill="#B7C89A" font-family="Arial, sans-serif" font-size="26">this keeps the work ordered and moving.</text>
+</svg>

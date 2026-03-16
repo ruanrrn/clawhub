@@ -1,0 +1,17 @@
+<svg width="1280" height="640" viewBox="0 0 1280 640" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1280" height="640" fill="#F6F0E8"/>
+  <rect x="48" y="48" width="1184" height="544" rx="28" fill="#111827"/>
+  <rect x="88" y="84" width="230" height="40" rx="20" fill="#F59E0B"/>
+  <text x="110" y="110" fill="#111827" font-family="Georgia, serif" font-size="24" font-weight="700">OpenClaw Skill</text>
+
+  <text x="88" y="214" fill="#F9FAFB" font-family="Georgia, serif" font-size="78" font-weight="700">GitHub</text>
+  <text x="88" y="288" fill="#FCD34D" font-family="Georgia, serif" font-size="72" font-weight="700">Publish Skill</text>
+  <rect x="88" y="332" width="148" height="6" rx="3" fill="#F59E0B" fill-opacity="0.95"/>
+  <rect x="248" y="332" width="72" height="6" rx="3" fill="#F59E0B" fill-opacity="0.35"/>
+
+  <text x="88" y="356" fill="#F9FAFB" font-family="Arial, sans-serif" font-size="32">Publish OpenClaw skills as polished</text>
+  <text x="88" y="398" fill="#FDE68A" font-family="Arial, sans-serif" font-size="32">public GitHub skill repositories.</text>
+
+  <text x="88" y="458" fill="#F3F4F6" font-family="Arial, sans-serif" font-size="26">This style is for skill repositories only,</text>
+  <text x="88" y="496" fill="#D1D5DB" font-family="Arial, sans-serif" font-size="26">not arbitrary codebases.</text>
+</svg>

@@ -60,6 +60,75 @@ Optional:
 - `Release hygiene`
 - `Repository`
 
+## Repository directory structure
+
+A standard OpenClaw skill repository uses a **flat structure** at the root level:
+
+```
+repo-root/
+├── SKILL.md                    # REQUIRED: Core skill definition (root level)
+├── README.md                   # English documentation
+├── README.zh-CN.md             # Chinese documentation (recommended)
+├── CONTRIBUTING.md             # Contribution guidelines
+├── LICENSE                     # MIT license
+├── scripts/                    # Implementation scripts
+├── references/                 # Reference documentation
+├── assets/                     # Images, diagrams, etc.
+└── dist/                       # Built artifacts (.skill files)
+```
+
+### ANTI-PATTERN: Nested skill directories
+
+❌ **DO NOT** nest the skill directory inside the repository:
+
+```
+# WRONG - Nested structure
+repo-root/
+├── README.md
+└── my-skill/                 # ❌ Unnecessary nesting
+    ├── SKILL.md
+    └── scripts/
+```
+
+✅ **DO** keep SKILL.md at the repository root:
+
+```
+# CORRECT - Flat structure
+repo-root/
+├── SKILL.md                  # ✅ At root level
+├── README.md
+└── scripts/
+```
+
+### Migration from nested to flat structure
+
+If you have a nested skill directory, migrate it:
+
+```bash
+# Move SKILL.md to root
+mv my-skill/SKILL.md .
+
+# Move other contents
+mv my-skill/* . 2>/dev/null || true
+
+# Remove empty nested directory
+rmdir my-skill 2>/dev/null || true
+
+# Commit the change
+git add -A
+git commit -m "refactor: flatten skill directory to standard layout
+
+Move SKILL.md from nested my-skill/ directory to repository root.
+This follows the standard OpenClaw skill repository layout."
+```
+
+### Rationale for flat structure
+
+1. **Simplicity**: One less directory level to navigate
+2. **Clarity**: SKILL.md is immediately visible at repo root
+3. **Consistency**: All standard OpenClaw skills follow this pattern
+4. **Tooling**: Some OpenClaw tools expect SKILL.md at repo root
+
 ## README voice
 
 Write for a public GitHub reader who has no private context.

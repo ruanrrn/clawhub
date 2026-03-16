@@ -1,6 +1,6 @@
 ---
 name: github-publish-skill
-description: "Publish or republish an OpenClaw skill as a complete public GitHub skill repository. Use when: (1) creating a new public repo for a reusable skill, (2) republishing an existing skill after updates, (3) standardizing README, CONTRIBUTING, and repo metadata for a skill repo. This skill's public-repo standard applies only to skill repositories, not to arbitrary software projects or general GitHub repos."
+description: "Publish or republish an OpenClaw skill to the unified openclaw repository (https://github.com/ruanrrn/openclaw). Skills are published to the `skills/` subdirectory instead of creating separate repositories. Use when: (1) publishing a new skill to the unified repository, (2) republishing an existing skill after updates, (3) standardizing README, CONTRIBUTING, and repo metadata for a skill."
 ---
 
 # GitHub Publish Skill
@@ -9,12 +9,12 @@ Publish an OpenClaw skill to GitHub like a finished artifact instead of a folder
 
 ## Scope
 
-Use this skill only for skill repositories.
+Use this skill only for publishing skills to the unified `openclaw` repository.
 
-That means repos whose main payload is an OpenClaw skill package, typically including:
+Skills are published to the `skills/` subdirectory of the unified repository, not as separate repos. A skill package typically includes:
 
-- `<skill-name>/SKILL.md`
-- `dist/<skill-name>.skill`
+- `skills/<skill-name>/SKILL.md`
+- `skills/<skill-name>/dist/<skill-name>.skill`
 - optional skill resources such as `references/`, `scripts/`, or `assets/`
 
 Do not use this skill as a generic GitHub beautifier for arbitrary codebases, libraries, apps, or mixed-purpose repos.
@@ -23,8 +23,8 @@ Do not use this skill as a generic GitHub beautifier for arbitrary codebases, li
 
 This skill combines two responsibilities:
 
-1. publish or republish a skill repo to GitHub
-2. shape that repo so it looks complete, standalone, and reusable as a public skill repo
+1. publish or republish a skill to the unified openclaw repository (skills/ subdirectory)
+2. shape that skill so it looks complete, standalone, and reusable as a public skill
 
 ## Publish workflow
 
@@ -68,21 +68,35 @@ A polished public skill repo should usually include:
 - `dist/<skill>.skill`
 - `<skill>/SKILL.md`
 
-### 3. Create or update the GitHub repo
+### 3. Create or update the skill in the unified repository
 
-Typical local flow:
+Typical local flow for the unified repository:
 
 ```bash
-cd /root/.openclaw/workspace/repos
-mkdir -p <repo-name>/dist
-cp -R /root/.openclaw/workspace/skills/<skill-name> <repo-name>/
+# Clone or update the unified repository
+cd /tmp
+rm -rf openclaw
+gh repo clone ruanrrn/openclaw
+
+# Copy the skill to the skills/ directory (without git history)
+rsync -av --exclude='.git' --exclude='.gitignore' \
+  /root/.openclaw/workspace/skills/<skill-name>/ \
+  openclaw/skills/<skill-name>/
+
+# Package and copy the .skill artifact
 python3 /root/.nvm/versions/node/v22.22.0/lib/node_modules/openclaw/skills/skill-creator/scripts/package_skill.py \
   /root/.openclaw/workspace/skills/<skill-name> \
   /root/.openclaw/workspace/dist
-cp /root/.openclaw/workspace/dist/<skill-name>.skill <repo-name>/dist/
-```
+mkdir -p openclaw/skills/<skill-name>/dist
+cp /root/.openclaw/workspace/dist/<skill-name>.skill \
+  openclaw/skills/<skill-name>/dist/
 
-Then initialize or update git and push with `gh`.
+# Commit and push
+cd openclaw
+git add skills/<skill-name>/
+git commit -m "Add <skill-name> skill"
+git push
+```
 
 ### 4. Set GitHub metadata
 
@@ -96,10 +110,43 @@ Keep metadata aligned with the skill's real scope:
 
 On updates:
 
-- sync the skill source into the repo
+- sync the skill source from workspace to the unified repository
 - regenerate the `.skill` artifact
 - refresh README or assets if the public behavior changed
 - commit and push with a descriptive message
+
+Example update flow:
+
+```bash
+cd /tmp/openclaw
+rsync -av --exclude='.git' --exclude='.gitignore' \
+  /root/.openclaw/workspace/skills/<skill-name>/ \
+  skills/<skill-name>/
+python3 /root/.nvm/versions/node/v22.22.0/lib/node_modules/openclaw/skills/skill-creator/scripts/package_skill.py \
+  /root/.openclaw/workspace/skills/<skill-name> \
+  /root/.openclaw/workspace/dist
+cp /root/.openclaw/workspace/dist/<skill-name>.skill \
+  skills/<skill-name>/dist/
+git add skills/<skill-name>/
+git commit -m "Update <skill-name> skill"
+git push
+```
+
+## Unified repository policy
+
+All public skills are published to the unified `openclaw` repository:
+
+- **Repository:** https://github.com/ruanrrn/openclaw
+- **Skills location:** `skills/<skill-name>/`
+- **Do not:** Create separate GitHub repositories for individual skills
+- **Do:** Add/update skills in the unified repository's `skills/` directory
+
+Benefits of the unified approach:
+
+- Single point of maintenance
+- Easier discovery and navigation
+- Consistent structure across all skills
+- Reduced repository proliferation
 
 ## Public skill repo style
 
@@ -190,12 +237,12 @@ It should explain:
 
 ## Family rule
 
-When multiple public repos belong to one skill family:
+In the unified repository, skills should:
 
-- keep them visually related
-- keep each repo independently useful
-- treat related repos as optional companions, not hidden dependencies
-- let the umbrella repo be broader without making smaller repos look incomplete
+- keep each skill independently useful and self-contained
+- treat related skills as optional companions, not hidden dependencies
+- maintain consistent structure and style across all skills
+- let skills coexist peacefully without creating unnecessary dependencies
 
 ## References
 

@@ -8,6 +8,88 @@ const https = require('https');
 const http = require('http');
 const { URL } = require('url');
 
+function parseJsonBody(body, context = 'response body') {
+  const trimmed = body.trim();
+
+  if (!trimmed) {
+    throw new Error(`Empty ${context}`);
+  }
+
+  try {
+    return JSON.parse(trimmed);
+  } catch (error) {
+    const preview = trimmed.slice(0, 120).replace(/\s+/g, ' ');
+    throw new Error(`${error.message} | Preview: ${preview}`);
+  }
+}
+
+function formatApiError(error) {
+  if (!error) {
+    return 'Unknown API error';
+  }
+
+  if (typeof error === 'string') {
+    return error;
+  }
+
+  return error.message || JSON.stringify(error);
+}
+
+function extractOutputText(parsed) {
+  if (!parsed?.output || !Array.isArray(parsed.output)) {
+    return '';
+  }
+
+  return parsed.output
+    .flatMap((item) => Array.isArray(item?.content) ? item.content : [])
+    .map((part) => part?.text || '')
+    .join('')
+    .trim();
+}
+
+function parseEventStream(body) {
+  let latestResponse = null;
+  let streamedText = '';
+  let streamError = null;
+
+  const blocks = body.split(/\r?\n\r?\n/);
+
+  for (const block of blocks) {
+    const lines = block.split(/\r?\n/);
+    const data = lines
+      .filter((line) => line.startsWith('data:'))
+      .map((line) => line.replace(/^data:\s?/, ''))
+      .join('\n')
+      .trim();
+
+    if (!data || data === '[DONE]') {
+      continue;
+    }
+
+    const event = parseJsonBody(data, 'SSE event payload');
+
+    if (event.error) {
+      streamError = event.error;
+    }
+
+    if (event.type === 'response.output_text.delta') {
+      streamedText += event.delta || '';
+    }
+
+    if (event.response) {
+      latestResponse = event.response;
+    }
+  }
+
+  if (streamError) {
+    throw new Error(`API Error: ${formatApiError(streamError)}`);
+  }
+
+  return latestResponse
+    ? { parsed: latestResponse, text: extractOutputText(latestResponse) || streamedText.trim() }
+    : { parsed: { type: 'event-stream', output_text: streamedText }, text: streamedText.trim() };
+}
+
 function sendPing({ baseUrl, apiKey, model }) {
   return new Promise((resolve, reject) => {
     const url = new URL(`${baseUrl}/responses`);
@@ -45,27 +127,23 @@ function sendPing({ baseUrl, apiKey, model }) {
 
       res.on('end', () => {
         try {
-          const parsed = JSON.parse(responseData);
+          const contentType = String(res.headers['content-type'] || '');
+          const isEventStream = contentType.includes('text/event-stream') || responseData.includes('\nevent:') || responseData.startsWith('event:');
+
+          const { parsed, text } = isEventStream
+            ? parseEventStream(responseData)
+            : { parsed: parseJsonBody(responseData), text: '' };
 
           // Check for API errors
           if (parsed.error) {
-            reject(new Error(`API Error: ${parsed.error.message || parsed.error}`));
+            reject(new Error(`API Error: ${formatApiError(parsed.error)}`));
             return;
           }
 
-          // Extract text from OpenAI Responses response
-          // Format: { output: [{ content: [{ text: 'pong' }] }] }
-          let text = '';
-
-          if (parsed.output && parsed.output.length > 0) {
-            const content = parsed.output[0].content;
-            if (content && content.length > 0) {
-              text = content[0].text || '';
-            }
-          }
+          const outputText = text || extractOutputText(parsed);
 
           resolve({
-            text: text.trim(),
+            text: outputText,
             raw: parsed
           });
         } catch (error) {

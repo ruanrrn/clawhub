@@ -18,11 +18,11 @@ PATTERNS = [
     ("github_pat", re.compile(r"\bgithub_pat_[A-Za-z0-9_]{30,}\b")),
     ("github_token", re.compile(r"\bghp_[A-Za-z0-9]{36}\b")),
     ("slack_token", re.compile(r"\bxox[baprs]-[A-Za-z0-9-]{10,}\b")),
-    # assignment-style hints
-    ("password_assign", re.compile(r"(?i)\bpassword\b\s*[:=]")),
-    ("token_assign", re.compile(r"(?i)\btoken\b\s*[:=]")),
-    ("secret_assign", re.compile(r"(?i)\bsecret\b\s*[:=]")),
-    ("api_key_assign", re.compile(r"(?i)\bapi[_-]?key\b\s*[:=]")),
+    # assignment-style hints: look for likely literal secrets, not ordinary field names or docs placeholders
+    ("password_literal", re.compile(r"(?i)\bpassword\b\s*[:=]\s*['\"][^'\"]{8,}['\"]")),
+    ("token_literal", re.compile(r"(?i)\btoken\b\s*[:=]\s*['\"][^'\"]{8,}['\"]")),
+    ("secret_literal", re.compile(r"(?i)\bsecret\b\s*[:=]\s*['\"][^'\"]{8,}['\"]")),
+    ("api_key_literal", re.compile(r"(?i)\bapi[_-]?key\b\s*[:=]\s*['\"][^'\"]{8,}['\"]")),
 ]
 
 SKIP_DIRS = {".git", "dist"}

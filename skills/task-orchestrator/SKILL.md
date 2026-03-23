@@ -17,7 +17,7 @@ Turn a pile of incoming requests into an execution plan that behaves like a comp
 - Keep the main thread focused on orchestration, user communication, decisions, and integration.
 - Push slower or repetitive execution into subthreads or subagents when that reduces blocking.
 - Route delegated subtasks by complexity and fit: simple work to faster/cheaper models, balanced work to mid-tier models, deep work to stronger reasoning models.
-- Respect bounded delegation: default to no more than 3 concurrent subagents unless the user explicitly changes the limit.
+- Respect bounded delegation by following the runtime-configured subagent concurrency cap instead of hardcoding a guessed constant. OpenClaw controls this via `agents.defaults.subagents.maxConcurrent` (default `8`); treat config as the hard ceiling, and stay below it when coordination overhead, rate limits, or shared-resource contention justify a smaller working set.
 - Prioritize by blocker removal, urgency, impact, and external wait cost.
 - Use idle gaps to finish short, low-risk tasks that do not interfere with longer work already running.
 - Send partial updates as soon as useful results land.

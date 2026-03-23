@@ -13,8 +13,11 @@ Turn a pile of incoming requests into an execution plan that behaves like a comp
 - Identify dependencies, conflicts, external waits, risk, and likely execution time.
 - Do not default to strict arrival order unless the user explicitly asks for it.
 - Prefer parallel execution for independent work.
-- Keep the main thread focused on orchestration, user communication, and decisions.
+- Use a control-plane pattern by default for non-coupled multitask bundles: the main thread owns orchestration, dispatch, user communication, and progress tracking; delegated subtasks do the bounded execution work.
+- Keep the main thread focused on orchestration, user communication, decisions, and integration.
 - Push slower or repetitive execution into subthreads or subagents when that reduces blocking.
+- Route delegated subtasks by complexity and fit: simple work to faster/cheaper models, balanced work to mid-tier models, deep work to stronger reasoning models.
+- Respect bounded delegation: default to no more than 3 concurrent subagents unless the user explicitly changes the limit.
 - Prioritize by blocker removal, urgency, impact, and external wait cost.
 - Use idle gaps to finish short, low-risk tasks that do not interfere with longer work already running.
 - Send partial updates as soon as useful results land.
@@ -58,6 +61,11 @@ Good candidates to launch early:
 - builds, tests, downloads, indexing, packaging
 - subagent runs with clear boundaries
 - anything waiting on network, model, or approval latency
+
+When tasks are independent, explicitly decide which work stays in the main lane and which gets delegated. The default split is:
+
+- **Main lane:** dispatch, state tracking, conflict handling, user-visible updates, result integration
+- **Delegated lanes:** bounded execution, artifact production, focused analysis, long-running tool work
 
 ### 3. Fill the gaps intelligently
 

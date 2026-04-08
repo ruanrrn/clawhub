@@ -1,11 +1,9 @@
 // copilot-proxy.ts
 // 中转GitHub Copilot，GITHUB_TOKEN为Personal access tokens (classic)，授权copilot
-import express from 'express';
+import http from 'http';
 
 const PORT = parseInt(process.env.PORT || '9090');
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
-
-// 合法 API Key 列表：默认 key + 环境变量传入的（逗号分隔）
 const API_KEYS = new Set(
   (process.env.API_KEYS || '').split(',').map(k => k.trim()).filter(Boolean)
 );
@@ -14,7 +12,7 @@ let copilotToken = '';
 let copilotEndpoint = '';
 let tokenExpiresAt = 0;
 
-async function refreshCopilotToken(): Promise<void> {
+async function refreshCopilotToken() {
   const res = await fetch('https://api.github.com/copilot_internal/v2/token', {
     headers: {
       'Authorization': `token ${GITHUB_TOKEN}`,
@@ -30,7 +28,7 @@ async function refreshCopilotToken(): Promise<void> {
   console.log(`[token] OK expires=${new Date(tokenExpiresAt).toLocaleTimeString()}`);
 }
 
-async function ensureToken(): Promise<void> {
+async function ensureToken() {
   if (!copilotToken || Date.now() > tokenExpiresAt - 120_000) await refreshCopilotToken();
 }
 
@@ -43,66 +41,104 @@ function upstreamHeaders(): Record<string, string> {
   };
 }
 
-const app = express();
-app.use(express.json({ limit: '10mb' }));
+function readBody(req: http.IncomingMessage): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const chunks: Buffer[] = [];
+    req.on('data', c => chunks.push(c));
+    req.on('end', () => resolve(Buffer.concat(chunks).toString()));
+    req.on('error', reject);
+  });
+}
 
-// 鉴权：请求的 Bearer key 必须在 API_KEYS 中
-app.use('/v1', (req, res, next) => {
-  const key = req.headers.authorization?.replace(/^Bearer\s+/i, '') || '';
-  if (!API_KEYS.has(key)) {
-    return res.status(403).json({ error: 'Forbidden', message: 'Invalid API key' });
-  }
-  next();
-});
+const server = http.createServer(async (req, res) => {
+  const url = req.url || '';
+  const method = req.method || '';
 
-app.get('/v1/models', async (_req, res) => {
-  try {
-    await ensureToken();
-    const r = await fetch(`${copilotEndpoint}/models`, { headers: upstreamHeaders() });
-    res.status(r.status).json(await r.json());
-  } catch (e: any) { res.status(502).json({ error: e.message }); }
-});
-
-app.post('/v1/chat/completions', async (req, res) => {
-  const stream = req.body.stream === true;
-  try {
-    await ensureToken();
-    console.log(`[req] ${req.body.model || 'gpt-4o'} stream=${stream}`);
-    const r = await fetch(`${copilotEndpoint}/chat/completions`, {
-      method: 'POST', headers: upstreamHeaders(), body: JSON.stringify(req.body),
-    });
-    if (!r.ok) return res.status(r.status).send(await r.text());
-    if (stream) {
-      res.setHeader('Content-Type', 'text/event-stream');
-      res.setHeader('Cache-Control', 'no-cache');
-      res.setHeader('Connection', 'keep-alive');
-      const reader = r.body!.getReader();
-      const dec = new TextDecoder();
-      req.on('close', () => reader.cancel());
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) { res.end(); break; }
-        res.write(dec.decode(value, { stream: true }));
-      }
-    } else {
-      res.json(await r.json());
+  // 鉴权
+  if (API_KEYS.size > 0) {
+    const key = (req.headers.authorization || '').replace(/^Bearer\s+/i, '');
+    if (!API_KEYS.has(key)) {
+      res.writeHead(403, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Forbidden', message: 'Invalid API key' }));
+      return;
     }
-  } catch (e: any) { res.status(502).json({ error: e.message }); }
-});
+  }
 
-app.post('/v1/embeddings', async (req, res) => {
   try {
     await ensureToken();
-    const r = await fetch(`${copilotEndpoint}/embeddings`, {
-      method: 'POST', headers: upstreamHeaders(), body: JSON.stringify(req.body),
-    });
-    res.status(r.status).json(await r.json());
-  } catch (e: any) { res.status(502).json({ error: e.message }); }
+
+    // GET /v1/models
+    if (method === 'GET' && url === '/v1/models') {
+      const r = await fetch(`${copilotEndpoint}/models`, { headers: upstreamHeaders() });
+      const body = await r.text();
+      res.writeHead(r.status, { 'Content-Type': 'application/json' });
+      res.end(body);
+      return;
+    }
+
+    // POST /v1/chat/completions
+    if (method === 'POST' && url === '/v1/chat/completions') {
+      const bodyStr = await readBody(req);
+      const body = JSON.parse(bodyStr);
+      const stream = body.stream === true;
+
+      const r = await fetch(`${copilotEndpoint}/chat/completions`, {
+        method: 'POST', headers: upstreamHeaders(), body: bodyStr,
+      });
+
+      if (!r.ok) {
+        const text = await r.text();
+        res.writeHead(r.status, { 'Content-Type': 'application/json' });
+        res.end(text);
+        return;
+      }
+
+      if (stream) {
+        res.writeHead(200, {
+          'Content-Type': 'text/event-stream',
+          'Cache-Control': 'no-cache',
+          'Connection': 'keep-alive',
+        });
+        const reader = r.body!.getReader();
+        const dec = new TextDecoder();
+        req.on('close', () => reader.cancel());
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) { res.end(); break; }
+          res.write(dec.decode(value, { stream: true }));
+        }
+      } else {
+        const text = await r.text();
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(text);
+      }
+      return;
+    }
+
+    // POST /v1/embeddings
+    if (method === 'POST' && url === '/v1/embeddings') {
+      const bodyStr = await readBody(req);
+      const r = await fetch(`${copilotEndpoint}/embeddings`, {
+        method: 'POST', headers: upstreamHeaders(), body: bodyStr,
+      });
+      const text = await r.text();
+      res.writeHead(r.status, { 'Content-Type': 'application/json' });
+      res.end(text);
+      return;
+    }
+
+    res.writeHead(404, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Not Found' }));
+
+  } catch (e: any) {
+    res.writeHead(502, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: e.message }));
+  }
 });
 
 (async () => {
-  console.log(`[proxy] Allowed API keys: ${API_KEYS.size}`);
+  if (!GITHUB_TOKEN) { console.error('[error] GITHUB_TOKEN is required'); process.exit(1); }
   await refreshCopilotToken();
   setInterval(() => refreshCopilotToken().catch(e => console.error('[token]', e.message)), 20 * 60 * 1000);
-  app.listen(PORT, () => console.log(`[proxy] http://localhost:${PORT}/v1 → ${copilotEndpoint}`));
+  server.listen(PORT, () => console.log(`[proxy] http://localhost:${PORT}/v1 → ${copilotEndpoint}`));
 })();

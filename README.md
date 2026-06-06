@@ -16,13 +16,26 @@ Instead of maintaining separate repositories for each skill, all public skills a
 
 ## Skills
 
-### Available Skills
+### Available Skills (11)
 
-- **[skill-publish](skills/skill-publish/)** — Publish or republish OpenClaw skills to the unified repository
-- **[task-orchestrator](skills/task-orchestrator/)** — Coordinate multiple user tasks without naive FIFO handling
+#### Agent Operations
+- **[memory-manager](skills/memory-manager/)** — Manage agent memory: add, search, update, and organize persistent knowledge
+- **[operational-fallbacks](skills/operational-fallbacks/)** — Fallback strategies and recovery patterns for common operational failures
 - **[restart-continuity](skills/restart-continuity/)** — Preserve and resume in-flight work across restarts
-- **[telegram-exec-approval](skills/telegram-exec-approval/)** — Add or repair Telegram interactive exec approvals
+- **[self-improving-agent](skills/self-improving-agent/)** — Self-improvement loop: monitor performance, identify gaps, patch skills
+- **[task-orchestrator](skills/task-orchestrator/)** — Coordinate multiple user tasks without naive FIFO handling
+- **[todo-continuity](skills/todo-continuity/)** — Preserve and resume TODO state across sessions
+
+#### Skill Management
+- **[skill-publish](skills/skill-publish/)** — Publish or republish OpenClaw skills to the unified repository
+- **[skill-vetter](skills/skill-vetter/)** — Vet and validate skills before publication or deployment
+
+#### Testing & Debugging
 - **[model-speedtest](skills/model-speedtest/)** — Test model latency by measuring API response speed
+- **[telegram-exec-approval](skills/telegram-exec-approval/)** — Add or repair Telegram interactive exec approvals
+
+#### Content Processing
+- **[weixin-link-reader](skills/weixin-link-reader/)** — Extract and process content from WeChat article links
 
 ## Install
 
@@ -34,10 +47,10 @@ Use ClawHub to install any skill from this repository:
 clawhub install ruanrrn/openclaw/skills/<skill-name>
 ```
 
-For example, to install `skill-publish`:
+For example, to install `memory-manager`:
 
 ```bash
-clawhub install ruanrrn/openclaw/skills/skill-publish
+clawhub install ruanrrn/openclaw/skills/memory-manager
 ```
 
 ### Manual Installation
@@ -51,14 +64,20 @@ If you prefer manual installation:
 ## Repository Structure
 
 ```text
-openclaw/
-├── skills/                    # All OpenClaw skills
-│   ├── skill-publish/        # Skill publishing workflow
-│   ├── task-orchestrator/    # Task coordination
-│   ├── restart-continuity/   # Restart recovery
-│   ├── telegram-exec-approval/  # Telegram approvals
-│   └── model-speedtest/      # Model latency testing
-└── scripts/                   # Shared utility scripts
+clawhub/
+├── skills/                         # All OpenClaw skills (11)
+│   ├── memory-manager/            # Memory management
+│   ├── model-speedtest/           # Model latency testing
+│   ├── operational-fallbacks/     # Failure recovery patterns
+│   ├── restart-continuity/        # Restart recovery
+│   ├── self-improving-agent/      # Self-improvement loop
+│   ├── skill-publish/             # Skill publishing workflow
+│   ├── skill-vetter/              # Skill validation
+│   ├── task-orchestrator/         # Task coordination
+│   ├── telegram-exec-approval/    # Telegram approvals
+│   ├── todo-continuity/           # TODO state preservation
+│   └── weixin-link-reader/        # WeChat content extraction
+└── scripts/                        # Shared utility scripts
 ```
 
 ## Contributing
@@ -70,6 +89,7 @@ Contributions are welcome! Please follow these guidelines:
 3. **Artifacts**: Include the packaged `.skill` file in the `dist/` directory
 4. **Metadata**: Keep badges, descriptions, and repository topics consistent
 5. **Scope**: Focus on OpenClaw-specific agent skills, not general-purpose code
+6. **No private data**: Ensure no API keys, secrets, personal data, or private server IPs
 
 For detailed contribution guidelines, see the `CONTRIBUTING.md` file in each skill directory.
 
@@ -79,6 +99,13 @@ This repository is licensed under the MIT License. Each individual skill may hav
 
 ## Repository
 
-- **GitHub**: https://github.com/ruanrrn/openclaw
+- **GitHub**: https://github.com/ruanrrn/clawhub
 - **License**: MIT
 - **Maintainer**: @ruanrrn
+
+## Changelog
+
+### 2026-06-07
+- Integrated 6 additional skills from private workspace
+- Total skills: 5 → 11
+- Added categories: Agent Operations, Skill Management, Testing & Debugging, Content Processing

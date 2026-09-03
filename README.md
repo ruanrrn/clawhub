@@ -28,8 +28,7 @@ Personal agent skills, in standard `SKILL.md` format. Usable in any agent client
 
 ```text
 clawhub/
-├── skills/     # 10 skills, one SKILL.md each
-└── sripts/     # Shared utility scripts
+└── skills/     # 10 skills, one SKILL.md each
 ```
 
 ## Install
@@ -48,6 +47,9 @@ cp -r clawhub/skills/<skill-name> ~/.agents/skills/
 - **Maintainer**: @ruanrrn
 
 ## Changelog
+
+### 2026-09-03
+- Removed leftover `sripts/proxy/` (WSL2 proxy manager + Copilot token relay) from the pre-revamp era
 
 ### 2026-09-02
 - Replaced repo content with 10 personal agent skills (thinking/research, decisions, life planning, development/writing)

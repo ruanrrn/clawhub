@@ -28,8 +28,7 @@
 
 ```text
 clawhub/
-├── skills/     # 10 个技能，每个一个 SKILL.md
-└── sripts/     # 共享工具脚本
+└── skills/     # 10 个技能，每个一个 SKILL.md
 ```
 
 ## 安装
@@ -48,6 +47,9 @@ cp -r clawhub/skills/<技能名称> ~/.agents/skills/
 - **维护者**: @ruanrrn
 
 ## 更新日志
+
+### 2026-09-03
+- 删除改版前遗留的 `sripts/proxy/`（WSL2 代理管理 + Copilot 令牌中转脚本）
 
 ### 2026-09-02
 - 仓库内容替换为 10 个个人智能体技能（思维研究/决策解题/人生规划/开发写作）
